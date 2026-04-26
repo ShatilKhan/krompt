@@ -1,0 +1,19 @@
+{
+  "name": "blog-writing-formula",
+  "version": "1.0.0",
+  "description": "Reusable agent skill for writing engaging, high-quality technical blog posts using a battle-tested 8-step formula.",
+  "author": "ShatilKhan",
+  "license": "MIT",
+  "install": {
+    "command": "npx skills add ShatilKhan/krompt/skills/blog-writing-formula",
+    "manual": "git clone https://github.com/ShatilKhan/krompt.git && cp krompt/skills/blog-writing-formula/prompt.md ."
+  },
+  "templates": [
+    "templates/technical-hack.md",
+    "templates/tutorial-walkthrough.md",
+    "templates/project-showcase.md",
+    "templates/opinion-essay.md"
+  ],
+  "entrypoint": "prompt.md",
+  "tags": ["blog", "writing", "technical-writing", "dev-to", "content-creation"]
+}
