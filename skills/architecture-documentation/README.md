@@ -39,7 +39,7 @@ bash install.sh generic
 
 ### Remote install (one-liner)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/your-org/architecture-docs-skill/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ShatilKhan/krompt/main/skills/architecture-documentation/install.sh | bash
 ```
 
 *(Replace with your actual hosted URL after publishing.)*
