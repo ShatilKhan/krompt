@@ -1,0 +1,49 @@
+{
+  "name": "architecture-documentation",
+  "version": "1.0.0",
+  "description": "Universal skill for creating system architecture docs with D2 diagrams, code snippets, and deployment documentation",
+  "author": "cline",
+  "license": "MIT",
+  "triggers": [
+    "create architecture docs",
+    "document the architecture",
+    "create system diagrams",
+    "update architecture documentation",
+    "add deployment docs",
+    "document the integration flow",
+    "create architecture diagrams",
+    "write system overview",
+    "document API contracts"
+  ],
+  "targets": [
+    {
+      "agent": "cline",
+      "file": ".clinerules",
+      "merge_strategy": "append"
+    },
+    {
+      "agent": "cursor",
+      "file": ".cursorrules",
+      "merge_strategy": "append"
+    },
+    {
+      "agent": "inceptor",
+      "path": "skills/architecture-documentation",
+      "entry": "skill.md"
+    },
+    {
+      "agent": "generic",
+      "file": "AGENTS.md",
+      "merge_strategy": "append"
+    }
+  ],
+  "files": [
+    "skill.md",
+    "rules.md",
+    "render.sh.template",
+    "README.md"
+  ],
+  "dependencies": {
+    "d2": ">=0.6.0"
+  }
+}

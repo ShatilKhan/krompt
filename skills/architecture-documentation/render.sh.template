@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Architecture Docs — Diagram Rendering Script
+# Usage: Place this in architecture-docs/diagrams/ and run: bash render.sh
+
+set -euo pipefail
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$DIR"
+mkdir -p out
+
+for src in *.d2; do
+    name="${src%.d2}"
+    echo ">>> $name"
+    d2 "$src" "out/${name}.svg"
+    d2 "$src" "out/${name}.png"
+done
+
+echo "Done. Outputs in ./out/"
