@@ -14,35 +14,44 @@ A universal, installable skill for creating system architecture docs with D2 dia
 
 ## Quick Install
 
-### Auto-detect (recommended)
-```bash
-cd your-project/
-bash /path/to/architecture-documentation/install.sh
-```
+### One-liner (auto-detects your agent)
 
-The installer auto-detects your agent environment from project files (`.clinerules`, `.cursorrules`, `.inceptor/`, etc.).
-
-### Manual target selection
-```bash
-# For Cline (VS Code)
-bash install.sh cline
-
-# For Cursor
-bash install.sh cursor
-
-# For Inceptor
-bash install.sh inceptor
-
-# For any other agent
-bash install.sh generic
-```
-
-### Remote install (one-liner)
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ShatilKhan/krompt/main/skills/architecture-documentation/install.sh | bash
 ```
 
-*(Replace with your actual hosted URL after publishing.)*
+Run from the root of your project. The installer detects which agent stack you use and installs to the right place.
+
+### Supported targets
+
+| Agent        | Auto-detected by                          | Installed to                              |
+|--------------|-------------------------------------------|-------------------------------------------|
+| Claude Code  | `.claude/` or `~/.claude/skills/`         | `.claude/skills/<name>/SKILL.md`          |
+| Cursor       | `.cursor/` or `.cursorrules`              | `.cursor/rules/<name>.mdc`                |
+| Cline        | `.clinerules` (file or dir) or `.cline/`  | `.clinerules/<name>.md`                   |
+| Windsurf     | `.windsurf/` or `.windsurfrules`          | `.windsurf/rules/<name>.md`               |
+| Copilot      | `.github/copilot-instructions.md`         | appended to that file                     |
+| Aider        | `.aider.conf.yml` or `CONVENTIONS.md`     | appended to `CONVENTIONS.md`              |
+| Inceptor     | `.inceptor/` or `inceptor/`               | `~/.inceptor/skills/<name>/`              |
+| Generic      | (fallback)                                | appended to `AGENTS.md`                   |
+
+### Force a specific target
+
+```bash
+curl -fsSL <url>/install.sh | bash -s -- cursor
+curl -fsSL <url>/install.sh | bash -s -- claude-code --scope user   # global, not project
+curl -fsSL <url>/install.sh | bash -s -- generic --force            # overwrite existing block
+```
+
+### Local install (after `git clone`)
+
+```bash
+bash skills/architecture-documentation/install.sh           # auto-detect
+bash skills/architecture-documentation/install.sh cursor    # explicit target
+bash skills/architecture-documentation/install.sh --help
+```
+
+Idempotent: re-running is a no-op unless you pass `--force`. Existing blocks are bracketed with `<!-- krompt:architecture-documentation:start/end -->` markers so they can be cleanly replaced or removed.
 
 ## How It Works
 

@@ -8,29 +8,43 @@ Built from the trenches of shipping real blog posts that get reads, reactions, a
 
 ## Installation
 
-### For Cline / Claude Dev Users
-
-Add this skill to your MCP settings or copy the prompt into your system prompt:
+### One-liner (auto-detects your agent)
 
 ```bash
-# Clone the skill
-git clone https://github.com/ShatilKhan/krompt.git
-
-# Use the prompt in your agent
-cat krompt/skills/blog-writing-formula/prompt.md
+curl -fsSL https://raw.githubusercontent.com/ShatilKhan/krompt/main/skills/blog-writing-formula/install.sh | bash
 ```
 
-### For Claude Code Users (Skills CLI)
+Add `-s -- --with-templates` to also drop the 4 blog templates next to the rule.
+
+### Supported targets
+
+| Agent        | Auto-detected by                          | Installed to                              |
+|--------------|-------------------------------------------|-------------------------------------------|
+| Claude Code  | `.claude/` or `~/.claude/skills/`         | `.claude/skills/<name>/SKILL.md`          |
+| Cursor       | `.cursor/` or `.cursorrules`              | `.cursor/rules/<name>.mdc`                |
+| Cline        | `.clinerules` (file or dir) or `.cline/`  | `.clinerules/<name>.md`                   |
+| Windsurf     | `.windsurf/` or `.windsurfrules`          | `.windsurf/rules/<name>.md`               |
+| Copilot      | `.github/copilot-instructions.md`         | appended to that file                     |
+| Aider        | `.aider.conf.yml` or `CONVENTIONS.md`     | appended to `CONVENTIONS.md`              |
+| Generic      | (fallback)                                | appended to `AGENTS.md`                   |
+
+### Force a specific target
 
 ```bash
-npx skills add ShatilKhan/krompt/skills/blog-writing-formula
+curl -fsSL <url>/install.sh | bash -s -- cursor --with-templates
+curl -fsSL <url>/install.sh | bash -s -- claude-code --scope user
+curl -fsSL <url>/install.sh | bash -s -- generic --force
 ```
 
-### Manual Install
+### Local install (after `git clone`)
 
-1. Copy `prompt.md` into your agent's system instructions
-2. Copy `templates/` into your project workspace
-3. Reference `examples/` for guidance
+```bash
+bash skills/blog-writing-formula/install.sh                # auto-detect
+bash skills/blog-writing-formula/install.sh cursor --with-templates
+bash skills/blog-writing-formula/install.sh --help
+```
+
+Idempotent: re-running is a no-op unless you pass `--force`. Bracketed with `<!-- krompt:blog-writing-formula:start/end -->` markers for clean replacement.
 
 ---
 
