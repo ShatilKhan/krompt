@@ -6,7 +6,7 @@
 set -eo pipefail
 
 SKILL_NAME="architecture-documentation"
-SKILL_VERSION="1.1.0"
+SKILL_VERSION="1.2.0"
 SKILL_DESC="Create system architecture docs with D2 diagrams, code snippets, and deployment documentation."
 SKILL_TRIGGERS="create architecture docs|document the system architecture|create system diagrams|add deployment docs|document the integration flow"
 RAW_BASE="${KROMPT_RAW_BASE:-https://raw.githubusercontent.com/ShatilKhan/krompt/main/skills/${SKILL_NAME}}"

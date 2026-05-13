@@ -118,6 +118,11 @@ Document the happy-path request lifecycle as a numbered list. Each step should r
 
 ## 4. Rendering Pipeline
 
+Render diagrams to **800×418 px PNG** by default — the cover-image spec used by
+Dev.to, Hashnode, and Medium (1.91:1, ≈Open Graph aspect). This keeps embeds
+crisp inline AND as social cards without per-platform tweaks. Always emit both
+`.svg` (source of truth) and `.png` (sized for blog blocks).
+
 Provide a `render.sh` in `diagrams/`:
 
 ```bash
@@ -127,17 +132,41 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 mkdir -p out
 
+TARGET_W="${TARGET_W:-800}"
+TARGET_H="${TARGET_H:-418}"
+PAD_ONLY="${PAD_ONLY:-1}"   # 1 = letterbox (preserve aspect), 0 = center-crop
+
 for src in *.d2; do
     name="${src%.d2}"
     echo ">>> $name"
-    d2 "$src" "out/${name}.svg"
-    d2 "$src" "out/${name}.png"
+    d2 --pad 20 "$src" "out/${name}.svg"
+    d2 --pad 20 "$src" "out/${name}.raw.png"
+    if [[ "$PAD_ONLY" == "1" ]]; then
+        magick "out/${name}.raw.png" -resize "${TARGET_W}x${TARGET_H}" \
+            -background white -gravity center \
+            -extent "${TARGET_W}x${TARGET_H}" "out/${name}.png"
+    else
+        magick "out/${name}.raw.png" -resize "${TARGET_W}x${TARGET_H}^" \
+            -gravity center -extent "${TARGET_W}x${TARGET_H}" "out/${name}.png"
+    fi
+    rm -f "out/${name}.raw.png"
 done
 
-echo "Done. Outputs in ./out/"
+echo "Done. Outputs (${TARGET_W}x${TARGET_H}) in ./out/"
 ```
 
-Embed SVGs in markdown (GitHub/VS Code compatible):
+**Authoring tips for 800×418:**
+- Aim for **horizontal/landscape** D2 layouts (`direction: right`) — vertical stacks letterbox poorly into a 1.91:1 frame.
+- Keep node labels short; long text shrinks on downscale.
+- Run `render.sh` and visually verify every PNG — letterboxing should leave only thin top/bottom bands, not large empty regions. If it does, redesign the diagram horizontally.
+- Requires `d2` and ImageMagick (`magick`/`convert`) on PATH. `rsvg-convert` works too but cannot letterbox.
+
+Embed PNGs in blog posts (correct size for blocks):
+```markdown
+![System context](./diagrams/out/01-context.png)
+```
+
+Embed SVGs in repo docs (crisp at any zoom, GitHub/VS Code compatible):
 ```markdown
 ![System context](./diagrams/out/01-context.svg)
 ```
@@ -182,7 +211,7 @@ When creating or updating architecture docs:
 - [ ] Document the three wire contracts
 - [ ] Document the happy-path request lifecycle
 - [ ] Include a known-issues table
-- [ ] Write `render.sh` and generate SVG + PNG outputs
+- [ ] Write `render.sh` and generate SVG + PNG outputs (PNGs at 800×418 for blog embeds)
 - [ ] Update README with rendering instructions
 - [ ] Verify no text/icon overlaps in rendered outputs
 - [ ] Verify all provider/model names are accurate to the codebase

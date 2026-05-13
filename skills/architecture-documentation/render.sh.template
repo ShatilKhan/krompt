@@ -1,17 +1,64 @@
 #!/usr/bin/env bash
 # Architecture Docs — Diagram Rendering Script
 # Usage: Place this in architecture-docs/diagrams/ and run: bash render.sh
+#
+# Target output size: 800x418 px (Dev.to / Hashnode / Medium blog cover spec).
+# Override via env: TARGET_W=800 TARGET_H=418 bash render.sh
+# Set PAD_ONLY=0 to center-crop instead of letterboxing (default: letterbox).
 
 set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 mkdir -p out
 
+TARGET_W="${TARGET_W:-800}"
+TARGET_H="${TARGET_H:-418}"
+PAD_ONLY="${PAD_ONLY:-1}"
+BG_COLOR="${BG_COLOR:-white}"
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+RESIZER=""
+if have magick; then RESIZER="magick"
+elif have convert; then RESIZER="convert"
+elif have rsvg-convert; then RESIZER="rsvg"
+fi
+
+if [[ -z "$RESIZER" ]]; then
+  echo "WARN: no raster resizer found (install ImageMagick or librsvg2-bin)."
+  echo "      PNGs will keep d2's native size, not exactly ${TARGET_W}x${TARGET_H}."
+fi
+
+resize_png() {
+  local in="$1" out="$2"
+  case "$RESIZER" in
+    magick|convert)
+      if [[ "$PAD_ONLY" == "1" ]]; then
+        "$RESIZER" "$in" -resize "${TARGET_W}x${TARGET_H}" \
+          -background "$BG_COLOR" -gravity center \
+          -extent "${TARGET_W}x${TARGET_H}" "$out"
+      else
+        "$RESIZER" "$in" -resize "${TARGET_W}x${TARGET_H}^" \
+          -gravity center -extent "${TARGET_W}x${TARGET_H}" "$out"
+      fi
+      ;;
+    rsvg)
+      rsvg-convert -w "$TARGET_W" -h "$TARGET_H" -b "$BG_COLOR" "$in" -o "$out"
+      ;;
+    *)
+      cp "$in" "$out"
+      ;;
+  esac
+}
+
 for src in *.d2; do
-    name="${src%.d2}"
-    echo ">>> $name"
-    d2 "$src" "out/${name}.svg"
-    d2 "$src" "out/${name}.png"
+  [[ -e "$src" ]] || continue
+  name="${src%.d2}"
+  echo ">>> $name"
+  d2 --pad 20 "$src" "out/${name}.svg"
+  d2 --pad 20 "$src" "out/${name}.raw.png"
+  resize_png "out/${name}.raw.png" "out/${name}.png"
+  rm -f "out/${name}.raw.png"
 done
 
-echo "Done. Outputs in ./out/"
+echo "Done. Outputs (${TARGET_W}x${TARGET_H}) in ./out/"
