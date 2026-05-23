@@ -34,9 +34,18 @@ Adapt the numbered docs to the project's actual concerns (e.g., `02-mcp-integrat
 Use **[D2](https://d2lang.com)** (`*.d2`) as the source of truth for all diagrams. D2 is a single Go binary with no system dependencies.
 
 ### Icon Sources (use HTTPS URLs, fetched at render time)
-- **Simple Icons**: `https://cdn.simpleicons.org/{name}/{color}` (e.g., `/react/61DAFB`, `/nestjs/E0234E`)
-- **Terrastruct**: `https://icons.terrastruct.com/{category}%2F{file}.svg`
-- **Lobe Icons**: `https://cdn.jsdelivr.net/gh/lobehub/lobe-icons/packages/static-svg/icons/{name}.svg`
+
+Resolution order (Simple Icons lags on new AI startups — the top cause of missing logos):
+
+1. **AI / LLM brands → Lobe Icons**: `https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@latest/icons/{name}.svg`
+   - Themed PNG fallback: `https://cdn.jsdelivr.net/npm/@lobehub/icons-static-png@latest/{light|dark}/{name}.png`
+   - Lowercase names, optional `-color`/`-text`: `anthropic`, `claude-color`, `claudecode-color`, `openai`, `gemini-color`, `mistral-color`, `groq`, `perplexity-color`, `ollama`, `deepseek-color`, `qwen-color`, `grok`, `xai`. Browse: <https://icons.lobehub.com>
+2. **Modern dev/SaaS → SVGL**: `https://api.svgl.app/svg/{name}.svg`
+3. **Catch-all → Iconify**: `https://api.iconify.design/{prefix}:{name}.svg` (`logos:` color, `simple-icons:` mono)
+4. **OSS/lang/framework → Simple Icons**: `https://cdn.simpleicons.org/{name}/{color}` (e.g., `/react/61DAFB`, `/nestjs/E0234E`)
+5. **Cloud/infra → Terrastruct**: `https://icons.terrastruct.com/{category}%2F{file}.svg`
+
+If a logo is missing, walk the chain (Lobe → SVGL → Iconify → Simple Icons) rather than inventing a URL; fall back to a plain labeled shape only as a last resort, and confirm it renders (a 404 shows as an empty box).
 
 ### CRITICAL: Prevent Text/Icon Overlap
 

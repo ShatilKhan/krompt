@@ -30,9 +30,28 @@ Adapt the numbered docs to the project's actual concerns (e.g., `02-mcp-integrat
 Use **[D2](https://d2lang.com)** (`*.d2`) as the source of truth for all diagrams. D2 is a single Go binary with no system dependencies.
 
 ### Icon Sources (use HTTPS URLs, fetched at render time)
-- **Simple Icons**: `https://cdn.simpleicons.org/{name}/{color}` (e.g., `/react/61DAFB`, `/nestjs/E0234E`)
-- **Terrastruct**: `https://icons.terrastruct.com/{category}%2F{file}.svg`
-- **Lobe Icons**: `https://cdn.jsdelivr.net/gh/lobehub/lobe-icons/packages/static-svg/icons/{name}.svg`
+
+Pick the provider by what you're drawing, and **follow this resolution order** —
+it exists because Simple Icons is slow to add new AI startups, which is the #1
+cause of missing logos:
+
+1. **AI / LLM brands → Lobe Icons** (Anthropic, OpenAI, Gemini, Mistral, Groq, Perplexity, Ollama, DeepSeek, Qwen, Grok, xAI, Claude Code, etc.):
+   - SVG: `https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@latest/icons/{name}.svg`
+   - Themed PNG fallback: `https://cdn.jsdelivr.net/npm/@lobehub/icons-static-png@latest/{light|dark}/{name}.png`
+   - Names are lowercase with optional `-color` / `-text` variants: `anthropic`, `claude-color`, `claudecode-color`, `openai`, `gemini-color`, `mistral-color`, `groq`, `perplexity-color`, `ollama`, `deepseek-color`, `qwen-color`, `grok`, `xai`. Prefer the `-color` variant for filled diagrams.
+   - Browse the full set: <https://icons.lobehub.com>
+2. **Modern dev/SaaS brands → SVGL**: `https://api.svgl.app/svg/{name}.svg` (e.g. `openai`, `vercel`, `supabase`). ~650 curated, production-ready logos.
+3. **General tech / catch-all → Iconify** (aggregates 200+ icon sets, huge coverage): `https://api.iconify.design/{prefix}:{name}.svg`
+   - `logos:` set for full-color brand marks (e.g. `logos:openai-icon`, `logos:react`)
+   - `simple-icons:` set for monochrome marks (e.g. `simple-icons:anthropic`)
+4. **Common OSS / language / framework logos → Simple Icons**: `https://cdn.simpleicons.org/{name}/{color}` (e.g. `/react/61DAFB`, `/nestjs/E0234E`)
+5. **Cloud / infra shapes → Terrastruct** (D2's native set): `https://icons.terrastruct.com/{category}%2F{file}.svg`
+
+**When a logo is missing:** don't leave a node icon-less or invent a URL. Walk the
+chain above (Lobe → SVGL → Iconify `logos:` → Iconify `simple-icons:` → Simple
+Icons). Iconify is the widest net and usually has it. As a last resort, use a
+plain labeled shape (no `icon:`) rather than a broken image link. Verify the icon
+actually renders in the PNG output — a 404 shows as an empty box.
 
 ### CRITICAL: Prevent Text/Icon Overlap
 
