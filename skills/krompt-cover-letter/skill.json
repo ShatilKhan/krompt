@@ -1,0 +1,22 @@
+{
+  "name": "krompt-cover-letter",
+  "version": "1.0.0",
+  "description": "Write cover letters in the user's own voice — captures tone and structural patterns, never bakes in projects or employers. Modes: application, research, scholarship.",
+  "author": "ShatilKhan",
+  "license": "MIT",
+  "install": {
+    "one_liner": "curl -fsSL https://raw.githubusercontent.com/ShatilKhan/krompt/main/skills/krompt-cover-letter/install.sh | bash",
+    "manual": "git clone https://github.com/ShatilKhan/krompt.git && cp krompt/skills/krompt-cover-letter/prompt.md ."
+  },
+  "entrypoint": "prompt.md",
+  "triggers": [
+    "write a cover letter",
+    "draft a cover letter",
+    "use the cover-letter skill",
+    "write a cover letter in my tone",
+    "research cover letter",
+    "scholarship essay"
+  ],
+  "modes": ["application", "research", "scholarship"],
+  "tags": ["cover-letter", "writing", "job-application", "research", "tone-capture"]
+}
