@@ -1,0 +1,14 @@
+# Optional nixpacks override (only needed if you do NOT ship a Dockerfile).
+# If your repo has a Dockerfile, Railway uses that and ignores this file.
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "pnpm"]
+
+[phases.install]
+cmds = ["pnpm install --frozen-lockfile"]
+
+[phases.build]
+cmds = ["pnpm build"]
+
+[start]
+cmd = "pnpm start"

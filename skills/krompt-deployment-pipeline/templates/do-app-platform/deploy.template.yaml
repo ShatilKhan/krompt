@@ -1,0 +1,31 @@
+# DigitalOcean App Platform spec.
+# Substitute {{SERVICE_NAME}}, {{REPO_OWNER}}, {{REPO_NAME}}, {{DEPLOY_BRANCH}}, {{PORT}}, {{REGION}}.
+# Apply via:
+#   doctl apps create --spec .do/deploy.template.yaml
+#   doctl apps update <app-id> --spec .do/deploy.template.yaml
+
+name: {{SERVICE_NAME}}
+region: {{REGION}}
+
+services:
+  - name: {{SERVICE_NAME}}
+    github:
+      repo: {{REPO_OWNER}}/{{REPO_NAME}}
+      branch: {{DEPLOY_BRANCH}}
+      deploy_on_push: true
+    dockerfile_path: Dockerfile
+    http_port: {{PORT}}
+    instance_count: 1
+    instance_size_slug: basic-xs
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 10
+      period_seconds: 30
+    envs:
+      - key: PORT
+        value: "{{PORT}}"
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        type: SECRET
+      # Add more SECRET envs here. Set values via:
+      #   doctl apps update <id> --spec ... (with the value), or in the DO dashboard.

@@ -11,6 +11,7 @@ Each skill ships its own universal `install.sh` that **auto-detects your agent s
 | [`architecture-documentation`](architecture-documentation/) | Generate system architecture docs with D2 diagrams, real code snippets, deployment notes | `curl -fsSL https://raw.githubusercontent.com/ShatilKhan/krompt/main/skills/architecture-documentation/install.sh \| bash` |
 | [`blog-writing-formula`](blog-writing-formula/) | Turn project notes into a Dev.to-ready post via an 8-step formula | `curl -fsSL https://raw.githubusercontent.com/ShatilKhan/krompt/main/skills/blog-writing-formula/install.sh \| bash` |
 | [`krompt-cover-letter`](krompt-cover-letter/) | Write cover letters in your own voice — captures tone & structure, not projects. Modes: `application`, `research`, `scholarship` | `curl -fsSL https://raw.githubusercontent.com/ShatilKhan/krompt/main/skills/krompt-cover-letter/install.sh \| bash` |
+| [`krompt-deployment-pipeline`](krompt-deployment-pipeline/) | Generate full deployment pipelines (GH Actions + Dockerfile + compose + Caddy + migration scaffolds). Cloud-agnostic. Supports SSH host, DO App Platform, AWS ECS, GCP Cloud Run, Vercel+Turso, Fly, Railway, Render | `curl -fsSL https://raw.githubusercontent.com/ShatilKhan/krompt/main/skills/krompt-deployment-pipeline/install.sh \| bash -s -- --with-templates` |
 
 ## How install works
 

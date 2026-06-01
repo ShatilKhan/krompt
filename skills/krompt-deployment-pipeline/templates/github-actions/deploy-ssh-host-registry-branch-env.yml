@@ -1,0 +1,81 @@
+# Deploy: registry-first build, branch-driven .env file selection, cloud-agnostic SSH host.
+# Pattern source: omnizen-ai.
+# Secrets sync to the host out-of-band (not in this workflow).
+# Substitute: {{SERVICE_NAME}}, {{DEPLOY_BRANCH}}, {{STAGING_BRANCH}}, {{RUNNER}}, {{REGISTRY}}, {{IMAGE_NAME}}, {{HOST_PATH}}
+
+name: Deploy
+
+on:
+  push:
+    branches: [{{DEPLOY_BRANCH}}, {{STAGING_BRANCH}}]
+  workflow_dispatch:
+
+env:
+  REGISTRY: {{REGISTRY}}
+
+jobs:
+  build:
+    runs-on: {{RUNNER}}
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve image tag (branch-aware)
+        id: meta
+        run: |
+          OWNER_LC="${GITHUB_REPOSITORY_OWNER,,}"
+          REPO_NAME=$(basename "$GITHUB_REPOSITORY")
+          if [ "$GITHUB_REF_NAME" = "{{STAGING_BRANCH}}" ]; then
+            REPO_NAME="${REPO_NAME}-staging"
+          fi
+          echo "tag=${REGISTRY}/${OWNER_LC}/${REPO_NAME}:${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          echo "latest=${REGISTRY}/${OWNER_LC}/${REPO_NAME}:latest" >> $GITHUB_OUTPUT
+
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.tag }}
+            ${{ steps.meta.outputs.latest }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    runs-on: {{RUNNER}}
+    steps:
+      - name: Deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            set -e
+            cd {{HOST_PATH}}
+
+            if [ "${{ github.ref_name }}" = "{{STAGING_BRANCH}}" ]; then
+              ENV_FILE=".env.staging"
+              SERVICE="{{SERVICE_NAME}}-staging"
+            else
+              ENV_FILE=".env"
+              SERVICE="{{SERVICE_NAME}}"
+            fi
+
+            sudo docker compose -f docker-compose.yml --env-file "$ENV_FILE" pull "$SERVICE"
+            sudo docker compose -f docker-compose.yml --env-file "$ENV_FILE" up -d "$SERVICE"
+            sudo docker compose -f docker-compose.yml ps
+            docker image prune -f

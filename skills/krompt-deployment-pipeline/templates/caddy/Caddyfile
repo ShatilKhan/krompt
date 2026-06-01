@@ -1,0 +1,19 @@
+# Caddy 2 reverse proxy with auto-HTTPS.
+# Substitute {{DOMAIN}} and {{SERVICE_NAME}} / {{PORT}}.
+
+{{DOMAIN}} {
+    encode zstd gzip
+
+    handle /health {
+        respond "ok" 200
+    }
+
+    handle {
+        reverse_proxy {{SERVICE_NAME}}:{{PORT}}
+    }
+
+    log {
+        output stdout
+        format console
+    }
+}

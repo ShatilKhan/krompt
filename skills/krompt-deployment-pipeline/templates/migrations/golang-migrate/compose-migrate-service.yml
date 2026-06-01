@@ -1,0 +1,18 @@
+# golang-migrate one-off runner.
+# Invocations:
+#   docker compose run --rm migrate up
+#   docker compose run --rm migrate down 1
+#   docker compose run --rm migrate version
+
+services:
+  migrate:
+    image: migrate/migrate:v4.17.0
+    restart: "no"
+    env_file:
+      - .env
+    volumes:
+      - ./db/migrations:/migrations
+    networks:
+      - app-net
+    profiles: ["migrate"]
+    entrypoint: ["migrate", "-path=/migrations/", "-database", "${DATABASE_URL}"]

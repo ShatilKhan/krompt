@@ -1,0 +1,45 @@
+{
+  "name": "krompt-deployment-pipeline",
+  "version": "1.0.0",
+  "description": "Generate complete deployment pipelines (GitHub Actions + Dockerfile + docker-compose + Caddyfile + migration scaffolds) for any project. Cloud-provider agnostic, supports CI-driven and git-based auto-deploy paradigms.",
+  "author": "ShatilKhan",
+  "license": "MIT",
+  "install": {
+    "one_liner": "curl -fsSL https://raw.githubusercontent.com/ShatilKhan/krompt/main/skills/krompt-deployment-pipeline/install.sh | bash",
+    "manual": "git clone https://github.com/ShatilKhan/krompt.git && cp -r krompt/skills/krompt-deployment-pipeline/ ."
+  },
+  "entrypoint": "prompt.md",
+  "triggers": [
+    "generate a deployment pipeline",
+    "set up deployment",
+    "create a CI/CD workflow",
+    "deploy to Vercel and Turso",
+    "deploy to EC2 with Docker",
+    "deploy to DigitalOcean",
+    "scaffold a Dockerfile and compose"
+  ],
+  "modes": [
+    "ssh-host-docker-caddy",
+    "do-app-platform",
+    "aws-ecs",
+    "gcp-cloud-run",
+    "vercel-serverless",
+    "fly-io",
+    "railway",
+    "render",
+    "generic-compose-only"
+  ],
+  "tags": [
+    "deployment",
+    "ci-cd",
+    "github-actions",
+    "docker",
+    "docker-compose",
+    "caddy",
+    "vercel",
+    "turso",
+    "drizzle",
+    "migrations",
+    "cloud-agnostic"
+  ]
+}

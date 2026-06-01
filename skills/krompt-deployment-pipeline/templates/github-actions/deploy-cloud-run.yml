@@ -1,0 +1,52 @@
+# Deploy to GCP Cloud Run.
+# Pre-reqs: Workload Identity Federation set up between GitHub and GCP.
+# Substitute {{DEPLOY_BRANCH}}, {{RUNNER}}, {{GCP_PROJECT}}, {{GCP_REGION}}, {{SERVICE_NAME}}, {{AR_REPO}}.
+
+name: Deploy (Cloud Run)
+
+on:
+  push:
+    branches: [{{DEPLOY_BRANCH}}]
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT: {{GCP_PROJECT}}
+  GCP_REGION: {{GCP_REGION}}
+  SERVICE_NAME: {{SERVICE_NAME}}
+  AR_REPO: {{AR_REPO}}
+
+jobs:
+  deploy:
+    runs-on: {{RUNNER}}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker auth for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push
+        run: |
+          IMAGE="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${AR_REPO}/${SERVICE_NAME}:${GITHUB_SHA::7}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE_NAME" \
+            --image "$IMAGE" \
+            --region "$GCP_REGION" \
+            --platform managed \
+            --allow-unauthenticated

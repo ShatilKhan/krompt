@@ -1,0 +1,62 @@
+# Deploy to AWS ECS / Fargate.
+# Pre-reqs: a task definition JSON at .aws/task-definition.json, ECS cluster + service already created.
+# Substitute {{DEPLOY_BRANCH}}, {{RUNNER}}, {{AWS_REGION}}, {{ECS_CLUSTER}}, {{ECS_SERVICE}}, {{CONTAINER_NAME}}, {{ECR_REPO}}.
+
+name: Deploy (AWS ECS)
+
+on:
+  push:
+    branches: [{{DEPLOY_BRANCH}}]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: {{AWS_REGION}}
+  ECS_CLUSTER: {{ECS_CLUSTER}}
+  ECS_SERVICE: {{ECS_SERVICE}}
+  CONTAINER_NAME: {{CONTAINER_NAME}}
+  ECR_REPOSITORY: {{ECR_REPO}}
+
+jobs:
+  deploy:
+    runs-on: {{RUNNER}}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, push
+        id: build
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          IMAGE="${REGISTRY}/${{ env.ECR_REPOSITORY }}:${GITHUB_SHA::7}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "image=$IMAGE" >> $GITHUB_OUTPUT
+
+      - name: Render task definition
+        id: taskdef
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: .aws/task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build.outputs.image }}
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.taskdef.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true

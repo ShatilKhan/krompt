@@ -1,0 +1,24 @@
+# Compose overlay adding a one-off migration runner service.
+# Used in `ci-applied` migration mode (jaldipay/dbmate pattern).
+# Run via: docker compose -f docker-compose.yml -f docker-compose.with-migrate.yml run --rm migrate up
+# Substitute {{MIGRATIONS_DIR}} (e.g. db/migrations).
+
+services:
+  migrate:
+    image: ghcr.io/amacneil/dbmate:latest
+    container_name: {{SERVICE_NAME}}-migrate
+    restart: "no"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    volumes:
+      - ./{{MIGRATIONS_DIR}}:/db/migrations:ro
+    networks:
+      - app-net
+    profiles: ["migrate"]
+    entrypoint: ["/usr/local/bin/dbmate", "--migrations-dir", "/db/migrations"]
+    # Common invocations:
+    #   docker compose run --rm migrate up
+    #   docker compose run --rm migrate down
+    #   docker compose run --rm migrate status

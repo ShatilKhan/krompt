@@ -1,0 +1,22 @@
+# dbmate one-off migration runner — drop into your docker-compose.yml.
+# Migrations live in db/migrations/ (or substitute {{MIGRATIONS_DIR}}).
+# Invocations:
+#   docker compose run --rm migrate up
+#   docker compose run --rm migrate down
+#   docker compose run --rm migrate status
+#   docker compose run --rm migrate new add_users_table
+
+services:
+  migrate:
+    image: ghcr.io/amacneil/dbmate:latest
+    restart: "no"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    volumes:
+      - ./db/migrations:/db/migrations
+    networks:
+      - app-net
+    profiles: ["migrate"]
+    entrypoint: ["/usr/local/bin/dbmate", "--migrations-dir", "/db/migrations"]

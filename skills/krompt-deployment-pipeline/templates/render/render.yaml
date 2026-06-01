@@ -1,0 +1,19 @@
+# Render blueprint. Commit this file and connect the repo on render.com — Render auto-applies on push.
+# Substitute {{SERVICE_NAME}}, {{REGION}}, {{PLAN}}, {{PORT}}.
+
+services:
+  - type: web
+    name: {{SERVICE_NAME}}
+    runtime: docker
+    region: {{REGION}}
+    plan: {{PLAN}}
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "{{PORT}}"
+      - key: DATABASE_URL
+        sync: false   # set value in Render dashboard
+      - key: NODE_ENV
+        value: production

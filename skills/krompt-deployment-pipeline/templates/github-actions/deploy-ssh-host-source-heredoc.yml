@@ -1,0 +1,61 @@
+# Deploy: source-to-host build, heredoc .env at workflow level, cloud-agnostic SSH host.
+# Pattern source: jaldipay. No registry used — source SCP'd to host, built there.
+# Substitute: {{SERVICE_NAME}}, {{DEPLOY_BRANCH}}, {{RUNNER}}, {{HOST_PATH}}, {{PORT}}, {{HEALTH_PATH}}, {{SOURCE_DIR}}
+
+name: Deploy
+
+on:
+  push:
+    branches: [{{DEPLOY_BRANCH}}]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: {{RUNNER}}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create .env from secrets (heredoc)
+        run: |
+          cat > {{SOURCE_DIR}}/.env <<EOF
+          PORT={{PORT}}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          # Add every secret your service needs here.
+          EOF
+
+      - name: SCP source to host
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          source: "{{SOURCE_DIR}}/*,{{SOURCE_DIR}}/.env"
+          target: "{{HOST_PATH}}"
+          strip_components: 1
+
+      - name: Build and start
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            set -e
+            cd {{HOST_PATH}}
+
+            docker compose -f docker-compose.yml down --remove-orphans || true
+            docker compose -f docker-compose.yml build --no-cache
+            docker compose -f docker-compose.yml up -d
+
+            # Run migrations if a migrate service is defined (safe-noop if not).
+            docker compose run --rm migrate up || echo "No migrate service or migration warning — check logs."
+
+            # Healthcheck
+            sleep 5
+            curl -fsS http://localhost:{{PORT}}{{HEALTH_PATH}} || { echo "Healthcheck failed"; exit 1; }
+
+            docker image prune -f
+            echo "Deployment successful."
